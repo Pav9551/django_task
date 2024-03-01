@@ -7,4 +7,4 @@
 - необходимо создать архитектуру базы данных для учебной части образовательной платформы
 ```
 ```
-![Alt-текст](https://github.com/Pav9551/django_task/blob/main/er-diagram.png "er-diagram")
+![Alt-текст](https://github.com/Pav9551/django_task/blob/master/er-diagram.png "er-diagram")
