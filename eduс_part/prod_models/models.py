@@ -9,11 +9,12 @@ class Product(models.Model):
     cost = models.DecimalField(max_digits=10, decimal_places=2)
     min_users_per_group = models.PositiveIntegerField()
     max_users_per_group = models.PositiveIntegerField()
+    lessoncount = models.PositiveIntegerField(blank=True, null=True)
     def __str__(self):
         return f' {self.name}'
 
 class Lesson(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='prod_lessons')
     name = models.CharField(max_length=100)
     video_URL = models.URLField()
     def __str__(self):
