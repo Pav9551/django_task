@@ -1,18 +1,11 @@
 from django.dispatch import receiver
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save, post_delete
 from .models import Product, Lesson
 from django.conf import settings
 
 from django.db.models import Count
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def post_save_user(**kwargs):
-    print('Пользователь создан или изменен')
-
-@receiver(post_save, sender=Product)
-def post_save_product(**kwargs):
-    print('Продукт создан или изменен')
-@receiver(post_save, sender=Lesson)
-def post_save_lesson(instance,**kwargs):
+#функция подсчета уроков в проекте
+def update_Product(instance):
     if instance.id is None:
         pass
     else:
@@ -29,7 +22,21 @@ def post_save_lesson(instance,**kwargs):
             curproduct.save()
             result.append(item)
         print(result)
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def post_save_user(**kwargs):
+    print('Пользователь создан или изменен')
+
+@receiver(post_save, sender=Product)
+def post_save_product(**kwargs):
+    print('Продукт создан или изменен')
+@receiver(post_save, sender=Lesson)
+def post_save_lesson(instance,**kwargs):
+    update_Product(instance)
     print('Урок создан или изменен')
+@receiver(post_delete, sender=Lesson)
+def post_delete_lesson(instance,**kwargs):
+    update_Product(instance)
+    print('Урок удален')
 
 
 
