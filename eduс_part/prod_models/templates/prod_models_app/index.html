@@ -9,10 +9,11 @@
     <div class="col-lg-8 col-md-10 mx-auto">
         {% for item in products %}
         <div class="post-preview">
-            <a href="">
+            <a href="{% url 'prod_app:product' id=item.id %}">
                 <h2 class="post-title">
                     {{ item.name }}
                 </h2>
+
                 <h3 class="post-subtitle">
                     Описание
                 </h3>
@@ -23,10 +24,7 @@
         </div>
         <hr>
         {% endfor %}
-        <!-- Pager -->
-        <div class="clearfix">
-            <a class="btn btn-primary float-right" href="#">Older Posts &rarr;</a>
-        </div>
+
     </div>
 </div>
 {% endblock %}
