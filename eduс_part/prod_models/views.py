@@ -3,22 +3,6 @@ from .models import Product, UserProduct, Group
 # Create your views here.
 
 # Функция для перераспределения пользователей в группы
-def redistribute_groups(product):
-    # Получаем всех пользователей, которые имеют доступ к продукту
-    user_products = UserProduct.objects.filter(product=product)
-    users_count = user_products.count()
-
-    # Получаем текущие группы продукта
-    groups = Group.objects.filter(product__id=product.id)
-
-    # Распределяем пользователей по группам
-    for i, user_product in enumerate(user_products):
-        # Выбираем группу для пользователя
-        group_index = i % groups.count()
-        group = groups[group_index]
-
-        # Добавляем пользователя в выбранную группу
-        group.users.add(user_product.user)
 
 def main_view(request):
     products = Product.objects.all()
