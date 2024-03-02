@@ -44,10 +44,13 @@ def user_product_view(request, id):
                     print('пользователь еще не принадлежит ни одной группе')
                     if Group.find_free_space_in_running_group(product) > 0:
                         print('есть свободные места среди запущенных групп - распределить в наиболее занятую')
+                        Group.find_free_running_group(product)
                     else:
                         print('нет свободных мест среди запущенных групп')
                         if Group.find_free_space_in_onhold_group(product) > 0:
                             print('есть свободные места среди не запущенных групп - распределить равномерно (распределить в наиболее свободную)')
+                            Group.find_free_onhold_group(product)
+
 
 
         else:
