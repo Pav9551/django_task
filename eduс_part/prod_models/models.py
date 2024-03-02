@@ -40,7 +40,7 @@ class Group(models.Model):
     def __str__(self):
         return f'{self.name}'
     @classmethod
-    def get_user_name(cls):
+    def get_user(cls):
         # Получаем модель пользователя
         UserModel = get_user_model()
         # Получаем имя поля, используемое как имя пользователя
@@ -48,6 +48,7 @@ class Group(models.Model):
         user = UserModel.objects.get(pk=1)  # Получение пользователя
         username = getattr(user, username_field)
         print(username)
+        return user
 
     @classmethod
     def find_product_groups(cls, product):
@@ -59,11 +60,7 @@ class Group(models.Model):
 
     @classmethod
     def find_user_in_groups(cls, product):
-        UserModel = get_user_model()
-        user = UserModel.objects.get(pk=1)
-        username_field = UserModel.USERNAME_FIELD
-        username = getattr(user, username_field)
-        print(username)
+        user = Group.get_user()
         # Подсчет числа групп, к которым относится пользователь и которые соответствуют продукту
         number_of_groups_for_user_and_product = Group.objects.filter(
             product__user_products__user=user,
@@ -72,11 +69,7 @@ class Group(models.Model):
         return number_of_groups_for_user_and_product
     @classmethod
     def find_user(cls, product):
-        UserModel = get_user_model()
-        user = UserModel.objects.get(pk=1)
-        username_field = UserModel.USERNAME_FIELD
-        username = getattr(user, username_field)
-        print(username)
+        user = Group.get_user()
         # Подсчет числа групп, к которым относится пользователь и которые соответствуют продукту
         number_of_groups_for_user = Group.objects.filter(
             users=user,
@@ -84,56 +77,8 @@ class Group(models.Model):
         ).count()
         return number_of_groups_for_user
     @classmethod
-    def find_free_space_in_running_group(cls, product):
-        UserModel = get_user_model()
-        user = UserModel.objects.get(pk=1)
-        username_field = UserModel.USERNAME_FIELD
-        username = getattr(user, username_field)
-        print(username)
-        # Получение числа групп, которые соответствуют продукту и запушены
-        started_groups = Group.objects.filter(
-            product__start_date__lte=timezone.now(),
-            product=product
-        )
-        free_space = 0
-        for group in started_groups:
-            # Получаем количество пользователей, добавленных в эту группу
-            users_count = group.users.count()
-            # Определяем количество свободных мест
-            free_slots = product.max_users_per_group - users_count
-            # Выводим информацию о группе и количестве свободных мест
-            print(f"Группа запущена: {group.name}, Свободные места: {free_slots}")
-            free_space = free_space + free_slots
-        return free_space
-    @classmethod
-    def find_free_space_in_onhold_group(cls, product):
-        UserModel = get_user_model()
-        user = UserModel.objects.get(pk=1)
-        username_field = UserModel.USERNAME_FIELD
-        username = getattr(user, username_field)
-        print(username)
-        # Получение числа групп, которые соответствуют продукту и не запушены
-        started_groups = Group.objects.filter(
-            product__start_date__gte=timezone.now(),
-            product=product
-        )
-        free_space = 0
-        for group in started_groups:
-            # Получаем количество пользователей, добавленных в эту группу
-            users_count = group.users.count()
-            # Определяем количество свободных мест
-            free_slots = product.max_users_per_group - users_count
-            # Выводим информацию о группе и количестве свободных мест
-            print(f"Группа еще не запущена: {group.name}, Свободные места: {free_slots}")
-            free_space = free_space + free_slots
-        return free_space
-    @classmethod
     def find_free_running_group(cls, product):
-        UserModel = get_user_model()
-        user = UserModel.objects.get(pk=1)
-        username_field = UserModel.USERNAME_FIELD
-        username = getattr(user, username_field)
-        print(username)
+        user = Group.get_user()
         # Получение числа групп, которые соответствуют продукту и запушены
         started_groups = Group.objects.filter(
             product__start_date__lte=timezone.now(),
@@ -141,15 +86,18 @@ class Group(models.Model):
         )
         # Сортировка групп по количеству свободных мест (в порядке возрастания)
         sorted_groups = sorted(started_groups, key=lambda group: product.max_users_per_group - group.users.count())
-        for group in sorted_groups:
+        '''for group in sorted_groups:
             # Получаем количество пользователей, добавленных в эту группу
             users_count = group.users.count()
             # Определяем количество свободных мест
             free_slots = product.max_users_per_group - users_count
             # Выводим информацию о группе и количестве свободных мест
-            print(f"Группа запущена: {group.name}, Свободные места: {free_slots}")
-        group_with_most_free_slots = sorted_groups[0] if sorted_groups else None
-        free_slots = product.max_users_per_group - group_with_most_free_slots.users.count()
+            print(f"Группа запущена: {group.name}, Свободные места: {free_slots}")'''
+        group_with_most_free_slots = sorted_groups[0] if sorted_groups else False
+        free_slots = 0
+        #необходимо убедиться, что есть свободные места в найденной группе, т.к в процессе поиска их могли занять
+        if group_with_most_free_slots:
+            free_slots = product.max_users_per_group - group_with_most_free_slots.users.count()
         if free_slots > 0:
             print(f"Добавляем в группу {group_with_most_free_slots.name}")
             group_with_most_free_slots.users.add(user)
@@ -158,31 +106,31 @@ class Group(models.Model):
             new_user_product.save()
 
         else:
-            print(f"Нет мест в группе {group_with_most_free_slots.name}")
-        return group_with_most_free_slots
+            print(f"Нет мест в запущенной группе")
+        return free_slots
     @classmethod
     def find_free_onhold_group(cls, product):
-        UserModel = get_user_model()
-        user = UserModel.objects.get(pk=1)
-        username_field = UserModel.USERNAME_FIELD
-        username = getattr(user, username_field)
-        print(username)
+        user = Group.get_user()
         # Получение числа групп, которые соответствуют продукту и не запушены
         started_groups = Group.objects.filter(
             product__start_date__gte=timezone.now(),
             product=product
         )
         # Сортировка групп по количеству свободных мест (в порядке убывания)
-        sorted_groups = sorted(started_groups, key=lambda group: product.max_users_per_group - group.users.count(), reverse=True)
-        for group in sorted_groups:
+        sorted_groups = sorted(started_groups,
+                               key=lambda group: product.max_users_per_group - group.users.count(), reverse=True)
+        '''for group in sorted_groups:
             # Получаем количество пользователей, добавленных в эту группу
             users_count = group.users.count()
             # Определяем количество свободных мест
             free_slots = product.max_users_per_group - users_count
             # Выводим информацию о группе и количестве свободных мест
-            print(f"Группа еще не запущена: {group.name}, Свободные места: {free_slots}")
-        group_with_most_free_slots = sorted_groups[0] if sorted_groups else None
-        free_slots = product.max_users_per_group - group_with_most_free_slots.users.count()
+            print(f"Группа еще не запущена: {group.name}, Свободные места: {free_slots}")'''
+        group_with_most_free_slots = sorted_groups[0] if sorted_groups else False
+        free_slots = 0
+        #необходимо убедиться, что есть свободные места в найденной группе, т.к в процессе поиска их могли занять
+        if group_with_most_free_slots:
+            free_slots = product.max_users_per_group - group_with_most_free_slots.users.count()
         if free_slots > 0:
             print(f"Добавляем в группу {group_with_most_free_slots.name}")
             group_with_most_free_slots.users.add(user)
@@ -190,8 +138,8 @@ class Group(models.Model):
             new_user_product = UserProduct(user=user, product=product)
             new_user_product.save()
         else:
-            print(f"Нет мест в группе {group_with_most_free_slots.name}")
-        return group_with_most_free_slots
+            print(f"Нет мест в не запущенной группе")
+        return free_slots
 
 
 

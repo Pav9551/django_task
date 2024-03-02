@@ -35,24 +35,20 @@ def user_product_view(request, id):
         if Group.find_product_groups(product) > 0:
             print('найдена группа(ы) соответствующая данному продукту')
             if Group.find_user_in_groups(product) > 0:
-                print('пользователь уже связан с продуктом')
+                print('пользователь уже связан с продуктом - это метка, что он уже есть в группе')
             else:
                 print('пользователь еще не связан с продуктом')
                 if Group.find_user(product) > 0:
-                    print('пользователь уже принадлежит одной из групп, но не связан с продуктом!')
+                    print('пользователь уже принадлежит одной из групп, но не связан с продуктом!!!')
                 else:
                     print('пользователь еще не принадлежит ни одной группе')
-                    if Group.find_free_space_in_running_group(product) > 0:
-                        print('есть свободные места среди запущенных групп - распределить в наиболее занятую')
-                        Group.find_free_running_group(product)
+                    if Group.find_free_running_group(product) > 0:
+                        print('распределено в наиболее занятую запущенную группу')
                     else:
-                        print('нет свободных мест среди запущенных групп')
-                        if Group.find_free_space_in_onhold_group(product) > 0:
-                            print('есть свободные места среди не запущенных групп - распределить равномерно (распределить в наиболее свободную)')
-                            Group.find_free_onhold_group(product)
-
-
-
+                        if Group.find_free_onhold_group(product) > 0:
+                            print('распределено в наименее занятую и не запущенную группу')
+                        else:
+                            print('Нет мест в группах')
         else:
             print('группы не найдены')
         return redirect('/')
